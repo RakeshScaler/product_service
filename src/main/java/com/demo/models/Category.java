@@ -1,8 +1,13 @@
 package com.demo.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Category {
 	
 	private int id;
-	private int title;
+	private String title;
 
 }

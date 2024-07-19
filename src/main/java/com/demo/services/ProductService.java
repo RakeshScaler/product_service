@@ -1,16 +1,22 @@
 package com.demo.services;
 
-import com.demo.dtos.ProductResponceDTO;
+import java.util.List;
+
+import com.demo.exceptions.ProductNotFoundException;
+import com.demo.models.Product;
 
 public interface ProductService {
 	
-	public ProductResponceDTO getSingleProduct(int productId);
+	public Product getSingleProduct(int productId) throws ProductNotFoundException;
 	
-	public ProductResponceDTO addProduct(
+	public List<Product> getAllProducts();
+	
+	public Product addProduct(
 			String title,
 			String description,
 			String ImageUrl,
 			double price,
 			String category
 			);
+	
 }
