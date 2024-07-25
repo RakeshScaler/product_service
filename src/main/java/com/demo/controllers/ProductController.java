@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.demo.dtos.ErrorDTO;
 import com.demo.dtos.ProductRequestDTO;
 import com.demo.dtos.ProductResponceDTO;
 import com.demo.exceptions.ProductNotFoundException;
@@ -25,12 +27,12 @@ public class ProductController {
 	private ProductService productService;
 	private ModelMapper modelMapper;
 	
-	public ProductController(ProductService productService,ModelMapper modelMapper) {
+	public ProductController(@Qualifier("SelfProductService")ProductService productService,ModelMapper modelMapper) {
 		this.productService = productService;
 		this.modelMapper = modelMapper;
 	}
 	@GetMapping("/products/{id}")
-	public ProductResponceDTO getProductDetails(@PathVariable("id") int productId) throws ProductNotFoundException {
+	public ProductResponceDTO getProductDetails(@PathVariable("id") Long productId) throws ProductNotFoundException {
 		Product  product =  productService.getSingleProduct(productId);
 		return convertToProductResponseDTO(product); 
 	}
@@ -45,15 +47,53 @@ public class ProductController {
 		return productResponceDtos;
 	}
 	@PostMapping("/products")
-	public  ProductResponceDTO createNewProduct(@RequestBody ProductRequestDTO productRequestDto) {
+	public  ResponseEntity<ProductResponceDTO> createNewProduct(@RequestBody ProductRequestDTO productRequestDto) {
 		Product product =  productService.addProduct(
 				productRequestDto.getTitle(),
 				productRequestDto.getDescription(),
-				productRequestDto.getImage(),
+				productRequestDto.getImageUrl(),
 				productRequestDto.getPrice(),
 				productRequestDto.getCategory());
-		return convertToProductResponseDTO(product); 
+		ProductResponceDTO productResponseDto = convertToProductResponseDTO(product);
+        return new ResponseEntity<>(productResponseDto, HttpStatus.CREATED);
+		
 	}
+	
+	 @DeleteMapping("/products/{id}")
+	    public ResponseEntity<ProductResponceDTO> deleteProduct(@PathVariable("id") Long productId)
+	    throws ProductNotFoundException {
+	        Product product = productService.deleteProduct(productId);
+	        ProductResponceDTO productResponseDto = convertToProductResponseDTO(product);
+	        return new ResponseEntity<>(productResponseDto, HttpStatus.OK);
+	    }
+	 
+	 @PatchMapping("/products/{id}")
+	    public ResponseEntity<ProductResponceDTO> updateProduct(@PathVariable("id") Long productId,
+	                                                            @RequestBody ProductResponceDTO productRequestDto)
+	    throws ProductNotFoundException {
+	        Product product = productService.updateProduct(productId,
+	                productRequestDto.getTitle(),
+	                productRequestDto.getDescription(),
+	                productRequestDto.getImageUrl(),
+	                productRequestDto.getCategory(),
+	                productRequestDto.getPrice() );
+	        ProductResponceDTO productResponseDto = convertToProductResponseDTO(product);
+	        return new ResponseEntity<>(productResponseDto, HttpStatus.OK);
+	    }
+
+	    @PutMapping("/product/{id}")
+	    public ResponseEntity<ProductResponceDTO> replaceProduct(@PathVariable("id") Long productId,
+	                                                            @RequestBody ProductResponceDTO productRequestDto)
+	            throws ProductNotFoundException {
+	        Product product = productService.replaceProduct(productId,
+	                productRequestDto.getTitle(),
+	                productRequestDto.getDescription(),
+	                productRequestDto.getImageUrl(),
+	                productRequestDto.getCategory(),
+	                productRequestDto.getPrice() );
+	        ProductResponceDTO productResponseDto = convertToProductResponseDTO(product);
+	        return new ResponseEntity<>(productResponseDto, HttpStatus.OK);
+	    }
 	
 	private ProductResponceDTO convertToProductResponseDTO(Product product) {
 		String categoryTitle = product.getCategory().getTitle();
