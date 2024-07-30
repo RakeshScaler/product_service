@@ -1,16 +1,18 @@
 package com.demo;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.demo.models.Category;
 import com.demo.models.Product;
 import com.demo.repositories.CategoryRepository;
 import com.demo.repositories.ProductRepository;
-import com.demo.repositories.projections.ProductProjection;
-import com.demo.repositories.projections.ProductWithIdAndTitle;
+
+import jakarta.transaction.Transactional;
 
 @SpringBootTest
 class ProductServiceApplicationTests {
@@ -53,20 +55,43 @@ class ProductServiceApplicationTests {
 	 * for(ProductProjection p : productProjections) {
 	 * System.out.println(p.getTitle()); System.out.println(p.getId()); } }
 	 */
+	/*
+	 * @Test void testNativeSql() { List<Product> products =
+	 * productRepository.someNativeSql(1L); for (Product product : products) {
+	 * System.out.println(product.getTitle());
+	 * System.out.println(product.getCategory().getTitle());
+	 * System.out.println(product.getImageUrl()); } }
+	 * 
+	 * @Test void testNativeProjectionSql() { ProductProjection product2 =
+	 * productRepository.someNativeSql2(1L);
+	 * System.out.println(product2.getTitle());
+	 * System.out.println(product2.getId()); }
+	 */
+	    
 	    @Test
-	    void testNativeSql() {
-	        List<Product> products = productRepository.someNativeSql(1L);
-	        for (Product product : products) {
-	            System.out.println(product.getTitle());
-	            System.out.println(product.getCategory().getTitle());
-	            System.out.println(product.getImageUrl());
+	    //Transactional
+	    void testFetchType() {
+	        Optional<Category> category = categoryRepository.findById(1L);
+	        if (category.isPresent()) {
+	            System.out.println(category.get().getTitle());
+	            List<Product> products = category.get().getProducts();
+	            for (Product product : products) {
+	                System.out.println(product.getTitle());
+	            }
 	        }
 	    }
 	    
 	    @Test
-	    void testNativeProjectionSql() {
-	    	ProductProjection product2 = productRepository.someNativeSql2(1L);
-	        System.out.println(product2.getTitle());
-	        System.out.println(product2.getId());
+	    @Transactional
+	    void testFetchMode() {
+	        List<Category> categories = categoryRepository.findByTitleEndingWith("electronics");
+	        for (Category category : categories) {
+	            System.out.println(category.getTitle());
+	            List<Product> products = category.getProducts();
+	            for (Product product : products) {
+	                System.out.println(product.getTitle());
+	            }
+	        }
 	    }
+
 }
